@@ -26,7 +26,6 @@ DEFAULT_CONFIG = {
 class PredatorsAndPreysEnv:
     def __init__(self, config=DEFAULT_CONFIG, render=False):
         self.game = Game(config["game"])
-        self.game.seed(42)
         self.time_limit = config["environment"]["time_limit"]
         self.frame_skip = config["environment"]["frameskip"]
         self.predator_action_size = config["game"]["num_preds"]
@@ -37,7 +36,10 @@ class PredatorsAndPreysEnv:
             self.visualizer = GuiVisualizer(self.game)
         else:
             self.visualizer = None
-
+            
+    def seed(self, n):
+        self.game.seed(n)
+        
     def step(self, predator_actions, prey_actions):
         if self.time_left < 0:
             return self.game.get_state_dict(), True
@@ -61,7 +63,7 @@ class PredatorsAndPreysEnv:
         is_done = is_done or self.time_left < 0
 
         return state, is_done
-
+    
     def reset(self):
         self.game.reset()
         self.time_left = self.time_limit
