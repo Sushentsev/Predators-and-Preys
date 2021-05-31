@@ -5,6 +5,7 @@ from examples.simple_chasing_agents.agents import FleeingPreyAgent
 import time
 
 env = PredatorsAndPreysEnv(render=False)
+env.seed(42)
 predator_agent = ChasingPredatorAgent()
 prey_agent = FleeingPreyAgent()
 
