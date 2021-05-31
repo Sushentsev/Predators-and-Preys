@@ -23,6 +23,9 @@ typedef struct{
     double pred_speed;
     double prey_speed;
     double w_timestep; // world timestep
+    
+    int* prey_order;
+    int* pred_order;
 } FGame;
 
 
@@ -30,30 +33,14 @@ double double_rand(){
     return (double)random() / RAND_MAX;
 }
 
-
-void shuffle_preys(entity* p, int* alive, int n){
-
+void shuffle_array(int* a, int n){
+    
     for(int i=n-1; i>0; i--){
         int j = rand() % (i + 1);
       
-        int a_temp = alive[i];
-        alive[i] = alive[j];
-        alive[j] = a_temp;
-        
-        entity e_temp = p[i];
-        p[i] = p[j];
-        p[j] = e_temp;
-    }
-}
-
-void shuffle_predators(entity* p, int n){
-
-    for(int i=n-1; i>0; i--){
-        int j = rand() % (i + 1);
-      
-        entity e_temp = p[i];
-        p[i] = p[j];
-        p[j] = e_temp;
+        int temp = a[i];
+        a[i] = a[j];
+        a[j] = temp;
     }
 }
 
@@ -91,6 +78,15 @@ FGame* game_init(double xl, double yl,
     F -> prey_speed = prey_s;
     
     F -> w_timestep = wt;
+    
+    F -> prey_order = (int* ) malloc(sizeof(int) * n_preys);
+    for(int i=0; i<n_preys; i++)
+        F -> prey_order[i] = i;
+        
+    F -> pred_order = (int* ) malloc(sizeof(int) * n_preds);
+    for(int i=0; i<n_preds; i++)
+        F -> pred_order[i] = i;
+    
     return F;
 }
 
@@ -133,14 +129,16 @@ void step(FGame* F, double* action_preys, double* action_predators){
     
     while (corrected){
         corrected = 0;
-        for(int i=0; i<G.num_preys; i++){
+        for(int k=0; k<G.num_preys; k++){
+            int i = G.prey_order[k];
             int this_corrected = 0;
             force_clip_position(&G.preys[i], -G.x_limit, -G.y_limit, G.x_limit, G.y_limit);
             for(int j=0; j<G.num_obstacles; j++)
                 this_corrected += force_not_intersect(&G.preys[i], &G.obstacles[j]);
         
             if (!this_corrected){
-                for(int j=0; j<G.num_preys; j++){
+                for(int t=0; t<G.num_preys; t++){
+                    int j = G.prey_order[t];
                     if (i==j)
                         continue;
                     this_corrected += force_not_intersect(&G.preys[i], &G.preys[j]);
@@ -159,7 +157,7 @@ void step(FGame* F, double* action_preys, double* action_predators){
             
         if (it_num > G.num_preys * G.num_preys){
             it_num = 0;
-            shuffle_preys(G.preys, G.alive, G.num_preys);
+            shuffle_array(G.prey_order, G.num_preys);
             shuffle_count += 1;
         }
         
@@ -174,14 +172,15 @@ void step(FGame* F, double* action_preys, double* action_predators){
     shuffle_count = 0;
     while (corrected){
         corrected = 0;
-        for(int i=0; i<G.num_preds; i++){
-            int this_corrected = 0;
+        for(int k=0; k<G.num_preds; k++){
+            int i = G.pred_order[k];
             force_clip_position(&G.predators[i], -G.x_limit, -G.y_limit, G.x_limit, G.y_limit);
             for(int j=0; j<G.num_obstacles; j++)
                 this_corrected += force_not_intersect(&G.predators[i], &G.obstacles[j]);
         
             if (!this_corrected){
-                for(int j=0; j<G.num_preds; j++){
+                for(int t=0; t<G.num_preds; t++){
+                    int j = G.pred_order[t];
                     if (i==j)
                         continue;
                     this_corrected += force_not_intersect(&G.predators[i], &G.predators[j]);
@@ -200,7 +199,7 @@ void step(FGame* F, double* action_preys, double* action_predators){
  
         if (it_num > G.num_preds * G.num_preds){
             it_num = 0;
-            shuffle_predators(G.predators, G.num_preds);
+            shuffle_array(G.pred_order, G.num_preds);
             shuffle_count += 1;
         }
  
