@@ -174,6 +174,7 @@ void step(FGame* F, double* action_preys, double* action_predators){
         corrected = 0;
         for(int k=0; k<G.num_preds; k++){
             int i = G.pred_order[k];
+            int this_corrected = 0;
             force_clip_position(&G.predators[i], -G.x_limit, -G.y_limit, G.x_limit, G.y_limit);
             for(int j=0; j<G.num_obstacles; j++)
                 this_corrected += force_not_intersect(&G.predators[i], &G.obstacles[j]);
