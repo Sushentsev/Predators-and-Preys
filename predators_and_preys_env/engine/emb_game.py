@@ -34,7 +34,9 @@ class FGame(Structure):
                 ("pred_radius", c_double),
                 ("pred_speed", c_double),
                 ("prey_speed", c_double),
-                ("w_timestep", c_double)]
+                ("w_timestep", c_double),
+                ("prey_order", int_p),
+                ("pred_order", int_p)]
                 
 game_p = POINTER(FGame)
 
