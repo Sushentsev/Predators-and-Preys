@@ -23,9 +23,20 @@ typedef struct{
     double pred_speed;
     double prey_speed;
     double w_timestep; // world timestep
+    int frameskip;
+    int frame_count;
     
     int* prey_order;
     int* pred_order;
+    
+    double* preys_reward;
+    double* preds_reward;
+    int* prey_mask;
+    int* pred_mask;
+    
+    double max_dist;
+    double min_dist;
+    int al;
 } FGame;
 
 
@@ -53,7 +64,7 @@ FGame* game_init(double xl, double yl,
                  int n_preds, int n_preys, int n_obsts,
                  double r_ub, double r_lb, double prey_r, double pred_r,
                  double pred_s, double prey_s,
-                 double wt){
+                 double wt, int fskip){
                  
     FGame* F = (FGame*) malloc(sizeof(FGame));
     
@@ -64,6 +75,7 @@ FGame* game_init(double xl, double yl,
     
     F -> x_limit = xl;
     F -> y_limit = yl;
+    F -> max_dist = (1 + xl) * (1 + xl) + (1 + yl) * (1 + yl);
     
     F -> num_preds = n_preds;
     F -> num_preys = n_preys;
@@ -73,20 +85,33 @@ FGame* game_init(double xl, double yl,
     F -> r_obst_lb = r_lb;
     F -> prey_radius = prey_r;
     F -> pred_radius = pred_r;
+    F -> min_dist = prey_r + pred_r;
     
     F -> pred_speed = pred_s;
     F -> prey_speed = prey_s;
     
     F -> w_timestep = wt;
+    F -> frameskip = fskip;
+    F -> frame_count = fskip;
     
     F -> prey_order = (int* ) malloc(sizeof(int) * n_preys);
-    for(int i=0; i<n_preys; i++)
+    F -> prey_mask = (int* ) malloc(sizeof(int) * n_preys);
+    for(int i=0; i<n_preys; i++){
         F -> prey_order[i] = i;
+        F -> prey_mask[i] = 0;
+    }
         
     F -> pred_order = (int* ) malloc(sizeof(int) * n_preds);
-    for(int i=0; i<n_preds; i++)
+    F -> pred_mask = (int* ) malloc(sizeof(int) * n_preds);
+    for(int i=0; i<n_preds; i++){
         F -> pred_order[i] = i;
+        F -> pred_mask[i] = 0;
+    }
+
+    F -> preys_reward = (double* ) malloc(sizeof(double) * n_preys);        
+    F -> preds_reward = (double* ) malloc(sizeof(double) * n_preds);
     
+    F -> al = n_preys;
     return F;
 }
 
@@ -211,11 +236,70 @@ void step(FGame* F, double* action_preys, double* action_predators){
     }
     
     for(int i=0; i<G.num_preys; i++){
+        int flag = 0; 
         for(int j=0; j<G.num_preds; j++){
-            if (is_intersect(&G.preys[i], &G.predators[j]))
-                G.alive[i] = 0;
+            if (G.alive[i] && is_intersect(&G.predators[j], &G.preys[i])){
+               G.pred_mask[j]++;
+               flag++;
+               F -> al--;
+            }
+        }
+        if (flag){
+            G.alive[i] = 0;
+            G.prey_mask[i]++;
         }
     }
+    F -> frame_count--;
+    
+    // Rewarding
+    if (F -> frame_count == 0){ 
+        F -> frame_count = G.frameskip;
+        
+        if (F -> al){
+            for(int i=0; i<G.num_preds; i++)
+                G.preds_reward[i] = G.max_dist;
+        }
+        else{
+            for(int i=0; i<G.num_preds; i++)
+                G.preds_reward[i] *= (-10);
+        }
+         
+        
+        for(int i=0; i<G.num_preys; i++){
+            if (!G.alive[i]){
+                G.preys_reward[i] = 0;
+                continue;
+            }
+            
+            G.preys_reward[i] = center_distance(&G.predators[0], &G.preys[i]);
+            if (G.preys_reward[i] < G.preds_reward[0])
+                G.preds_reward[0] = G.preys_reward[i];
+             
+            for(int j=1; j<G.num_preds; j++){
+                double d = center_distance(&G.predators[j], &G.preys[i]);
+                if  (d < G.preys_reward[i])
+                    G.preys_reward[i] =  d;
+                if  (d < G.preds_reward[j])
+                    G.preds_reward[j] =  d;
+            }
+        }
+        
+        for(int i=0; i<G.num_preys; i++){
+            if (G.prey_mask[i]){
+                G.preys_reward[i] = -100;
+                G.prey_mask[i] = 0;
+            }
+            G.preys_reward[i] *= 0.1;
+        }
+            
+        for(int j=0; j<G.num_preds; j++){
+            if (G.pred_mask[j]){
+                G.preds_reward[j] = -100 * G.pred_mask[j];
+                G.pred_mask[j] = 0;
+            }
+            G.preds_reward[j] *= (-0.1);
+        }
+    }  
 }
 
 void reset(FGame* F){
@@ -230,6 +314,8 @@ void reset(FGame* F){
     
     free(F -> predators);
     F -> predators = (entity*) malloc(sizeof(entity) * (F -> num_preds));
+    
+    F -> al = F -> num_preys;
     
     FGame G = *F;
     
