@@ -35,8 +35,17 @@ class FGame(Structure):
                 ("pred_speed", c_double),
                 ("prey_speed", c_double),
                 ("w_timestep", c_double),
+                ("frameskip", c_int),
+                ("frame_count", c_int),
                 ("prey_order", int_p),
-                ("pred_order", int_p)]
+                ("pred_order", int_p),
+                ("preys_reward", double_p),
+                ("preds_reward", double_p),
+                ("prey_mask", int_p),
+                ("pred_mask", int_p),
+                ("max_dist", c_double),
+                ("min_dist", c_double),
+                ("al", c_int)]
                 
 game_p = POINTER(FGame)
 
@@ -92,13 +101,14 @@ class Game:
         self.predator_speed = config["predator_speed"]        # 1.0
         self.prey_speed = config["prey_speed"]                # 1.2
         self.world_timestep = config["world_timestep"]        # 1/60
+        self.frameskip = config["frameskip"]
 
         self.true_game = ginit(self.x_limit, self.y_limit,
                                self.num_preds, self.num_preys, self.num_obsts,
                                self.obstacle_r_b[0], self.obstacle_r_b[1],
                                self.prey_radius, self.predator_radius,
                                self.predator_speed, self.prey_speed,
-                               self.world_timestep)
+                               self.world_timestep, self.frameskip)
                           
     def seed(self, n):
         seeding(n)
@@ -135,7 +145,13 @@ class Game:
                 "radius": e.radius
             })
         return state_dict
-
+    
+    def get_reward(self):
+        reward = {}
+        reward["preys"] = np.ctypeslib.as_array(self.true_game.contents.preys_reward, shape=(self.num_preys,))
+        reward["predators"] = np.ctypeslib.as_array(self.true_game.contents.preds_reward, shape=(self.num_preds,))
+        return reward
+    
     def step(self, actions):
         Step(self.true_game, 
              np.array(actions["preys"], dtype=np.float64).ctypes.data_as(double_p),
