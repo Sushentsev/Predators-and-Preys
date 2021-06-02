@@ -15,6 +15,7 @@ DEFAULT_CONFIG = {
         "predator_speed": 6.0,
         "prey_speed": 9.0,
         "world_timestep": 1/100,
+        "frameskip": 5
     },
     "environment": {
         "frameskip": 5,
@@ -61,8 +62,9 @@ class PredatorsAndPreysEnv:
         for prey in state["preys"]:
             is_done = is_done and not prey["is_alive"]
         is_done = is_done or self.time_left < 0
-
-        return state, is_done
+        
+        reward = self.game.get_reward()
+        return state, reward, is_done
     
     def reset(self):
         self.game.reset()
