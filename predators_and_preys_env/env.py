@@ -43,7 +43,11 @@ class PredatorsAndPreysEnv:
         
     def step(self, predator_actions, prey_actions):
         if self.time_left < 0:
-            return self.game.get_state_dict(), True
+            self.time_left -= 1
+            if self.time_left < -10:
+                raise Exception("Reset the environment!!!")
+            else:
+                return self.game.get_state_dict(), self.game.get_reward(), True
 
         action_dict = {
             "preys": prey_actions,
