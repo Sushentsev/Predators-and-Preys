@@ -1,7 +1,7 @@
 from predators_and_preys_env.env import PredatorsAndPreysEnv
 import numpy as np
-from examples.simple_chasing_agents.agents import ChasingPredatorAgent
-from examples.simple_chasing_agents.agents import FleeingPreyAgent
+from models.simple_chasing_agents.agents import ChasingPredatorAgent
+from models.simple_chasing_agents.agents import FleeingPreyAgent
 import time
 
 env = PredatorsAndPreysEnv(render=True)
@@ -16,5 +16,5 @@ while True:
         state_dict = env.reset()
         step_count = 0
 
-    state_dict, done = env.step(predator_agent.act(state_dict), prey_agent.act(state_dict))
+    state_dict, reward, done = env.step(predator_agent.act(state_dict), prey_agent.act(state_dict))
     step_count += 1

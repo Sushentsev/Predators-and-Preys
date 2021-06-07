@@ -10,7 +10,7 @@ while True:
         print("reset")
         env.reset()
         step_count = 0
-    _, done = env.step(np.zeros(env.predator_action_size), np.ones(env.prey_action_size))
+    _, reward, done = env.step(np.zeros(env.predator_action_size), np.ones(env.prey_action_size))
     step_count += 1
 
     print(f"step {step_count}")
