@@ -16,5 +16,11 @@ while True:
         state_dict = env.reset()
         step_count = 0
 
+    prey_actions = prey_agent.act(state_dict)
+
+    for action in prey_actions:
+        if np.abs(action) > 1.:
+            print(action)
+
     state_dict, reward, done = env.step(predator_agent.act(state_dict), prey_agent.act(state_dict))
     step_count += 1

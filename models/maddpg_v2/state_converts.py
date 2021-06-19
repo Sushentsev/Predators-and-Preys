@@ -21,6 +21,6 @@ def observation(agent_i, agents, obstacles) -> List[float]:
 
 
 def observations(state_dict) -> List[List[float]]:
-    agents = state_dict["predators"] + state_dict["preys"]
+    agents = state_dict["predators"] + state_dict["prey"]
     obstacles = state_dict["obstacles"]
     return [observation(agent_i, agents, obstacles) for agent_i in range(len(agents))]

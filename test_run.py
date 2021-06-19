@@ -1,6 +1,8 @@
 from predators_and_preys_env.env import PredatorsAndPreysEnv
+import numpy as np
 from models.simple_chasing_agents.agents import ChasingPredatorAgent
 from models.simple_chasing_agents.agents import FleeingPreyAgent
+import time
 
 env = PredatorsAndPreysEnv(render=False)
 env.seed(42)
@@ -8,7 +10,7 @@ predator_agent = ChasingPredatorAgent()
 prey_agent = FleeingPreyAgent()
 
 num_of_games = 25
-# from mul
+
 done = True
 step_count = 0
 state_dict = None

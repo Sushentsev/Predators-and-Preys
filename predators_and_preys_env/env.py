@@ -14,7 +14,7 @@ DEFAULT_CONFIG = {
         "predator_radius": 1.0,
         "predator_speed": 6.0,
         "prey_speed": 9.0,
-        "world_timestep": 1 / 40,
+        "world_timestep": 1/40,
         "frameskip": 2
     },
     "environment": {
@@ -37,10 +37,10 @@ class PredatorsAndPreysEnv:
             self.visualizer = GuiVisualizer(self.game)
         else:
             self.visualizer = None
-
+            
     def seed(self, n):
         self.game.seed(n)
-
+        
     def step(self, predator_actions, prey_actions):
         if self.time_left < 0:
             self.time_left -= 1
@@ -53,23 +53,23 @@ class PredatorsAndPreysEnv:
             "preys": prey_actions,
             "predators": predator_actions
         }
-
+        
         for _ in range(self.frame_skip):
             self.game.step(action_dict)
             if self.visualizer is not None:
                 self.visualizer.update()
                 time.sleep(self.world_timestep * 2)
-
+        
         self.time_left -= 1
         state = self.game.get_state_dict()
         is_done = True
         for prey in state["preys"]:
             is_done = is_done and not prey["is_alive"]
         is_done = is_done or self.time_left < 0
-
+        
         reward = self.game.get_reward()
         return state, reward, is_done
-
+    
     def reset(self):
         self.game.reset()
         self.time_left = self.time_limit

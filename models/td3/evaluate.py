@@ -6,9 +6,9 @@ import sys
 sys.path.append("/home/denis/Study/HSE/Predators-and-Preys")
 
 
-from models.ddpg.converts import state_to_prey_obs
-from models.ddpg.actor import Actor
-from models.ddpg.rewards import prey_reward
+from models.td3.converts import state_to_prey_obs
+from models.td3.actor import Actor
+from models.td3.rewards import prey_reward
 from models.simple_chasing_agents.agents import ChasingPredatorAgent, FleeingPreyAgent
 from models.imitation_learning.predator import PredatorAgent
 from predators_and_preys_env.env import PredatorsAndPreysEnv
@@ -34,8 +34,7 @@ def evaluate(eval_config):
     env = PredatorsAndPreysEnv(game_config, render=True)
     env.seed(eval_config.seed)
     
-    # predator = PredatorAgent()
-    predator = ChasingPredatorAgent()
+    predator = PredatorAgent()
     prey = Prey(state_dim=3 + 2 * 2 + 5 * 3, action_dim=1)
     # prey = FleeingPreyAgent()
 

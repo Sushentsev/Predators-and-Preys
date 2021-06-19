@@ -7,14 +7,17 @@ import torch
 from models.maddpg_v2.maddpg import MADDPG
 from models.maddpg_v2.state_converts import observations
 from predators_and_preys_env.env import PredatorsAndPreysEnv
+from models.simple_chasing_agents.agents import ChasingPredatorAgent
 
 
-def evaluate(game_config, n_episodes: int = 50):
+def evaluate(n_episodes: int = 50):
+    game_config = json.load(open("config.json"))
+    game_config["environment"]["time_limit"] = 50
+
     maddpg = MADDPG.init_from_save("./solutions/state_dict")
     env = PredatorsAndPreysEnv(game_config, render=True)
     maddpg.prep_rollouts()
     
-    from models.simple_chasing_agents.agents import ChasingPredatorAgent
     predator = ChasingPredatorAgent()
 
     for ep_i in range(n_episodes):
@@ -32,6 +35,4 @@ def evaluate(game_config, n_episodes: int = 50):
 
 
 if __name__ == '__main__':
-    game_config = json.load(open("config.json"))
-    game_config["environment"]["time_limit"] = 50
-    evaluate(game_config)
+    evaluate()

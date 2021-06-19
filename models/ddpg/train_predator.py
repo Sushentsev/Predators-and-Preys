@@ -5,10 +5,11 @@ import torch
 import random
 
 import sys
+
 sys.path.append("/home/denis/Study/HSE/Predators-and-Preys")
 
-from models.ddpg.converts import state_to_prey_obs
-from models.ddpg.rewards import prey_reward
+from models.ddpg.converts import state_to_prey_obs, state_to_pred_obs
+from models.ddpg.rewards import pred_reward
 from models.simple_chasing_agents.agents import ChasingPredatorAgent, FleeingPreyAgent
 from models.ddpg.ddpg import DDPG
 from models.imitation_learning.predator import PredatorAgent
@@ -24,15 +25,14 @@ def set_seed(env, seed: int):
 
 def train(train_config):
     print(f"Running train with params: {train_config}")
-    import time 
-    start_time = time.time() 
+    import time
+    start_time = time.time()
 
-    env = PredatorsAndPreysEnv(json.load(open("config.json")), render=False)
-    predator = PredatorAgent()
+    env = PredatorsAndPreysEnv(json.load(open("config_predator.json")), render=False)
+    prey = FleeingPreyAgent()
     set_seed(env, train_config.seed)
-    
-    ddpg = DDPG(state_dim=3 + 2 * 2 + 5 * 3, action_dim=1)
 
+    ddpg = DDPG(state_dim=3 + 5 * 3 + 5 * 3, action_dim=1)
 
     done = True
     total_rewards = 0.
@@ -44,15 +44,15 @@ def train(train_config):
         sigma = train_config.max_sigma - \
                 (train_config.max_sigma - train_config.min_sigma) * step / train_config.transitions
 
-        action = ddpg.act(torch.FloatTensor(state_to_prey_obs(state_dict)).view(1, -1))
+        action = ddpg.act(torch.FloatTensor(state_to_pred_obs(state_dict)).view(1, -1))
         action += np.random.normal(scale=sigma)
         action = np.array(np.clip(action, -1, 1))
-        next_state_dict, _, done = env.step(predator.act(state_dict), action)
+        next_state_dict, _, done = env.step(action, prey.act(state_dict))
 
-        reward = prey_reward(next_state_dict["preys"][0], next_state_dict)
+        reward = pred_reward(next_state_dict["predators"][0], next_state_dict)
         total_rewards += reward
 
-        ddpg.buffer.push(state_to_prey_obs(state_dict), action, reward, state_to_prey_obs(next_state_dict), done)
+        ddpg.buffer.push(state_to_pred_obs(state_dict), action, reward, state_to_pred_obs(next_state_dict), done)
         state_dict = next_state_dict
         ddpg.update()
 
@@ -63,7 +63,7 @@ def train(train_config):
             print()
 
             total_rewards = 0.
-            torch.save(ddpg.actor.state_dict(), "./solutions/prey.pkl")
+            torch.save(ddpg.actor.state_dict(), "./solutions/predator.pkl")
 
 
 if __name__ == "__main__":

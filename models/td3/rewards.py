@@ -1,9 +1,11 @@
-from typing import Tuple
-import numpy as np
 import math
 
+import numpy as np
+
+
 def distance(agent1, agent2) -> float:
-    return math.sqrt((agent1["x_pos"] - agent2["x_pos"]) ** 2 + (agent1["y_pos"] - agent2["y_pos"]) ** 2) - agent1["radius"] - agent2["radius"]
+    return math.sqrt((agent1["x_pos"] - agent2["x_pos"]) ** 2 + (agent1["y_pos"] - agent2["y_pos"]) ** 2) - agent1[
+        "radius"] - agent2["radius"]
 
 
 def top_k(agent, entities, k: int = None):
@@ -17,10 +19,10 @@ def is_collision(agent1, agent2) -> bool:
 
 def prey_reward(prey, state_dict) -> float:
     rew = 0.
-    shape = False
+    shape = True
 
     if shape:
-        for pred in top_k(prey, state_dict["predators"], k=2):
+        for pred in state_dict["predators"]:
             rew += 0.1 * distance(pred, prey)
 
     for pred in state_dict["predators"]:
@@ -29,7 +31,7 @@ def prey_reward(prey, state_dict) -> float:
 
     def bound(x: float) -> float:
         if x <= 0.2:
-            return -2.
+            return -5.
         else:
             return 0.
 
@@ -44,12 +46,11 @@ def pred_reward(pred, state_dict) -> float:
     shape = True
 
     if shape:
-        alive_preys_distances = [distance(pred, prey) for prey in state_dict["preys"] if prey["is_alive"]]
-        if len(alive_preys_distances) > 0:
-            rew -= 0.1 * min(alive_preys_distances)
+        closest_prey = top_k(pred, state_dict["preys"])
+        rew -= 0.1 * distance(pred, closest_prey)
 
-    for prey in state_dict["preys"]:
+    for prey in state_dict["prey"]:
         if prey["is_alive"] and is_collision(pred, prey):
-            rew += 15.
+                rew += 15.
 
     return rew

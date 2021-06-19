@@ -33,7 +33,7 @@ def predator_reward(predator, preys):
     # Adversaries are rewarded for collisions with agents
     reward = 0
     #
-    # for prey in preys:
+    # for prey in prey:
     #     dx = prey["x_pos"] - predator["x_pos"]
     #     dy = prey["y_pos"] - predator["y_pos"]
     #     length = np.sqrt(np.sum(np.square([dx, dy])))

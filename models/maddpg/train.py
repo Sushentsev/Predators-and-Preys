@@ -166,7 +166,7 @@ def main():
     for i in range(TRANSITIONS):
         action = maddpg.act(convert_state(state))
         next_state, rewards, done = env.step(action[:num_preds], action[num_preds:])
-        rewards = np.concatenate((rewards["predators"], rewards["preys"]))
+        rewards = np.concatenate((rewards["predators"], rewards["prey"]))
 
         ##
         current_preds_rewards.append(np.mean(rewards[:num_preds]))

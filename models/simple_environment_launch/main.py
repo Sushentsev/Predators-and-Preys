@@ -1,6 +1,8 @@
+import sys
+sys.path.append("/home/denis/Study/HSE/Predators-and-Preys")
+
 from predators_and_preys_env.env import PredatorsAndPreysEnv
 import numpy as np
-
 env = PredatorsAndPreysEnv(render=True)
 
 done = True

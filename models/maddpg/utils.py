@@ -2,10 +2,10 @@ import numpy as np
 
 
 def convert_state(state_dict):
-    entities_types = ["predators", "preys", "obstacles"]
+    entities_types = ["predators", "prey", "obstacles"]
     keys = {
         "predators": ["x_pos", "y_pos", "radius", "speed"],
-        "preys": ["x_pos", "y_pos", "radius", "speed", "is_alive"],
+        "prey": ["x_pos", "y_pos", "radius", "speed", "is_alive"],
         "obstacles": ["x_pos", "y_pos", "radius"]
     }
 

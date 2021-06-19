@@ -7,6 +7,7 @@ class Actor(nn.Module):
     def __init__(self, state_dim: int, action_dim: int,
                  hidden_dim: int = 64, norm_in: bool = True):
         super().__init__()
+        # HARDCODED!
         action_dim = 2
         if norm_in:
             self.in_fn = nn.BatchNorm1d(state_dim)
@@ -20,8 +21,7 @@ class Actor(nn.Module):
         self.fc3 = nn.Linear(hidden_dim, action_dim)
         self.fc3.weight.data.uniform_(-3e-3, 3e-3)
         self.nonlin = nn.ReLU()
-        # self.out_fn = nn.Tanh()
-        self.out_fn = lambda x: x
+        self.out_fn = nn.Tanh()
 
     def forward(self, states: Tensor) -> Tensor:
         batch_size, _ = states.shape

@@ -52,7 +52,7 @@ def train(game_config, params):
 
             # rewards["predators"] = np.array([np.sum(rewards["predators"])] * env.game.num_preds)
             predator_state = next_obs["predators"][0]
-            prey_state = next_obs["preys"][0]
+            prey_state = next_obs["prey"][0]
             reward_concat = np.array([pred_reward(predator_state, next_obs),prey_reward(prey_state, next_obs)])
             replay_buffer.push(obs, agent_actions, reward_concat, next_obs_tr, [done] * maddpg.num_agents)
             obs = next_obs_tr
